@@ -1,7 +1,6 @@
 import os
 import sys
 import networkx as nx
-import matplotlib.pyplot as plt
 
 ####################################################
 # To run:
@@ -41,6 +40,7 @@ def score_output(input_folder, output_file):
     output = open(output_file)
     assignments = []
     for line in output:
+        print(line)
         line = line[1: -2]
         curr_assignment = [node.replace("'","") for node in line.split(", ")]
         assignments.append(curr_assignment)
