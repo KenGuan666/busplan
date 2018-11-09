@@ -16,7 +16,7 @@ path_to_inputs = "./testInputs"
 ###########################################
 path_to_outputs = "./testOutputs"
 
-num_rep = 2
+num_rep = 1
 
 def parse_input(folder_name):
     '''

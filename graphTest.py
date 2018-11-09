@@ -11,11 +11,12 @@ def randomGraph(size, density):
         for j in range(i + 1, size):
             if chance(density):
                 graph.add_edge(i, j)
+                
     return graph
 
 def chance(num):
     return num >= random.randint(1, 100)
 
-G = randomGraph(2000, 50)
+G = randomGraph(200, 50)
 
 nx.write_gml(G, './testInputs/input1/graph.gml')
