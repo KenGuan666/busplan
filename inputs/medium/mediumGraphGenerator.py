@@ -1,6 +1,7 @@
 import networkx as nx
 import random
 
+size = 500
 G = nx.Graph()
 # G = nx.read_gml('./testInputs/input1.gml')
 
@@ -29,6 +30,13 @@ def graphGenerator(size):
 
     return graph
 
-G = graphGenerator(499)
+G = graphGenerator(size - 1)
 
 nx.write_gml(G, './inputs/medium/graph.gml')
+
+output_file = open("./outputs/medium.out", "w")
+output_file.write("[1]" + '\n')
+
+groupStr = str([i for i in range (2, size)])
+output_file.write(groupStr + '\n')
+output_file.close()
