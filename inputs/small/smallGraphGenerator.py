@@ -18,7 +18,7 @@ def graphGenerator(size):
             graph.add_edge(j, num)
 
 
-    parameters_file = open("./parameters.txt", "w")
+    parameters_file = open("./inputs/small/parameters.txt", "w")
     parameters_file.write(str(2) + '\n')
     parameters_file.write(str(size) + '\n')
     #the following defines the rowdy groups, whcih are the pairs (1, k), k from 26 to 49
@@ -32,4 +32,11 @@ def graphGenerator(size):
 
 G = graphGenerator(49)
 
-nx.write_gml(G, './graph.gml')
+nx.write_gml(G, './inputs/small/graph.gml')
+
+output_file = open("./outputs/small.out")
+output_file.write("[1]" + '\n')
+
+groupStr = str([i for i in range (2, size + 1)])
+output_file.write(groupStr + '\n')
+output_file.close()
