@@ -1,7 +1,6 @@
 import networkx as nx
 import random
 
-
 G = nx.Graph()
 # G = nx.read_gml('./testInputs/input1.gml')
 
@@ -27,7 +26,6 @@ def graphGenerator(size):
         parameters_file.write(str([1, i]) + '\n')
 
     parameters_file.close()
-
 
     return graph
 
