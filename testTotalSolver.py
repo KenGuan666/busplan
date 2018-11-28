@@ -18,6 +18,8 @@ path_to_outputs = "."
 
 num_rep = 1
 
+bestSoFar = {'small': [], 'medium': [], 'large': []}
+
 def parse_input(folder_name):
     '''
         Parses an input and returns the corresponding graph and parameters
@@ -47,8 +49,6 @@ def parse_input(folder_name):
 
 def solve(graph, num_buses, size_bus, constraints):
     #TODO: Write this method as you like. We'd recommend changing the arguments here as well
-    score = 0
-    bestSol = []
     size = num_buses
     for _ in range(num_rep):
         size = num_buses
@@ -63,13 +63,10 @@ def solve(graph, num_buses, size_bus, constraints):
         for b in buses:
             solution.append(b)
 
-        curr_score = calcScore(graph.copy(), constraints, solution)
-        print(str(curr_score) + '\n')
-        if curr_score > score:
-            score = curr_score
-            bestSol = solution
+        score = calcScore(graph.copy(), constraints, solution)
+        print(str(score) + '\n')
 
-    return bestSol
+    return (solution, score)
 
 def calcScore(graph, constraints, sol):
 
@@ -109,6 +106,8 @@ def main():
         formatted correctly.
     '''
 
+    bestSoFar = load_dic()
+
     for directory in ['small', 'medium', 'large']:
         subfolders = [x[1] for x in os.walk(path_to_inputs + '/' + directory)][0]
         for subfolder in subfolders:
@@ -116,10 +115,17 @@ def main():
             graph, num_buses, size_bus, constraints = parse_input(path)
             print(directory + ' ' + subfolder)
             solution = solve(graph, num_buses, size_bus, constraints)
-            output_file = open(path_to_outputs + '/' + directory + '/' + subfolder + '.out', 'w+')
-            for bus in solution:
-                output_file.write(str(bus) + '\n')
-            output_file.close()
+
+            if (solution[1] > bestSoFar[directory][int(subfolder)]):
+                output_file = open(path_to_outputs + '/' + directory + '/' + subfolder + '.out', 'w+')
+                for bus in solution:
+                    output_file.write(str(bus) + '\n')
+                output_file.close()
+
+            else:
+                print('No improvement. Discarded.')
+
+    save_dic(bestSoFar)
 
     # graph, num_buses, size_bus, constraints = parse_input("testInputs/input1")
     # solution = solve(graph, num_buses, size_bus, constraints)
@@ -129,6 +135,14 @@ def main():
     #     output_file.write(str(bus) + '\n')
     # output_file.close()
 
+
+def save_dic(obj):
+    with open('dic.pkl', 'wb') as f:
+        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+def load_dic():
+    with open('dic.pkl', 'rb') as f:
+        return pickle.load(f)
 
 if __name__ == '__main__':
     main()
