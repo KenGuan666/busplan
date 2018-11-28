@@ -3,6 +3,8 @@ import pickle
 import random
 import os
 
+import queue
+
 ###########################################
 # Change this variable to the path to
 # the folder containing all three input
@@ -61,46 +63,12 @@ def solve_naiveFriends(graph, num_buses, size_bus, constraints):
     solution = []
     buses = [[] for i in range(num_buses)]
 
-    for n in graph.nodes():
-        graph.nodes[n]['friends'] = len(list(graph.adj[n]))
 
-    lst = list(graph.nodes.data())
-    lst.sort(key = lambda n : n[1]['friends'], reverse = True)
-
-    filled = []
-
-    for bus in buses:
-        curr = lst.pop()[0]
-        if curr not in filled:
-            filled.append(curr)
-            bus.append(curr)
-            for neighbor in list(graph.adj[curr]):
-                if len(bus) < size_bus and neighbor[0] not in filled:
-                    bus.append(neighbor[0])
-                    filled.append(neighbor[0])
-
-    if len(lst) > 0:
-        for bus in buses:
-            while len(bus) < size_bus and len(lst) > 0:
-                next = lst.pop()[0]
-                if next not in filled:
-                    bus.append(next)
-            if len(lst) == 0:
-                break
-
-    for b in buses:
-        solution.append(b)
 
     score = calcScore(graph.copy(), constraints, solution)
     print(str(score) + '\n')
 
     return (solution, score)
-
-
-
-def solve_naiveFriendsWithQueue(graph, num_buses, size_bus, constraints):
-
-    return 0
 
 
 def solve_fastOrder(graph, num_buses, size_bus, constraints):
@@ -188,37 +156,33 @@ def calcScore(graph, constraints, sol):
         if len(bus) == 0:
             return 0
 
-    try:
-        bus_assignments = {}
-        attendance_count = 0
+    bus_assignments = {}
+    attendance_count = 0
 
-        # make sure each student is in exactly one bus
-        attendance = {student:False for student in graph.nodes()}
-        for i in range(len(sol)):
-            for student in sol[i]:
-                attendance[student] = True
-                bus_assignments[student] = i
+    # make sure each student is in exactly one bus
+    attendance = {student:False for student in graph.nodes()}
+    for i in range(len(sol)):
+        for student in sol[i]:
+            attendance[student] = True
+            bus_assignments[student] = i
 
-        total_edges = graph.number_of_edges()
-        # Remove nodes for rowdy groups which were not broken up
-        for i in range(len(constraints)):
-            busses = set()
+    total_edges = graph.number_of_edges()
+    # Remove nodes for rowdy groups which were not broken up
+    for i in range(len(constraints)):
+        busses = set()
+        for student in constraints[i]:
+            busses.add(bus_assignments[student])
+        if len(busses) <= 1:
             for student in constraints[i]:
-                busses.add(bus_assignments[student])
-            if len(busses) <= 1:
-                for student in constraints[i]:
-                    if student in graph:
-                        graph.remove_node(student)
+                if student in graph:
+                    graph.remove_node(student)
 
-        # score output
-        score = 0
-        for edge in graph.edges():
-            if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
-                score += 1
-        return score / total_edges
-
-    except:
-        return 0
+    # score output
+    score = 0
+    for edge in graph.edges():
+        if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
+            score += 1
+    return score / total_edges
 
 def main():
     '''
@@ -229,51 +193,32 @@ def main():
     '''
 
     bestSoFar = load_dic()
-    total = 0
-    improved = 0
 
-    method = 'naiveFriends'
+    path = './all_inputs/' +  'small' + '/' + '1'
+    graph, num_buses, size_bus, constraints = parse_input(path)
 
-    for directory in ['small', 'medium', 'large']:
-        subfolders = [x[1] for x in os.walk(path_to_inputs + '/' + directory)][0]
-        for subfolder in subfolders:
-            path = path_to_inputs + '/' + directory + '/' + subfolder
-            graph, num_buses, size_bus, constraints = parse_input(path)
-            print(directory + ' ' + subfolder)
+    for n in graph.nodes():
+        graph.nodes[n]['friends'] = len(list(graph.adj[n]))
 
-            if method == 'fastOrderFill':
-                solve = solve_fastOrderFill
-            elif method == 'fastOrder':
-                solve = solve_fastOrder
-            elif method == 'revOrderFill':
-                solve = solve_revOrderFill
-            elif method == 'random':
-                solve = solve_random
-            elif method == 'naiveFriends':
-                solve = solve_naiveFriends
+    lst = list(graph.nodes.data())
+    lst.sort(key = lambda n : n[1]['friends'], reverse = True)
 
-            solution = solve(graph, num_buses, size_bus, constraints)
+    print(lst)
 
-            if (solution[1] > bestSoFar[directory][subfolder]['score']):
-                improved += 1
-                total += solution[1]
-                bestSoFar[directory][subfolder]['score'] = solution[1]
-                bestSoFar[directory][subfolder]['method'] = method
+    # for pair in graph.edges:
+    #     graph[pair[0]][pair[1]]['value'] = graph.nodes[pair[0]]['friends'] + graph.nodes[pair[1]]['friends']
+    #
+    # for group in constraints:
+    #     R = len(group)
+    #     p = 2
+    #     for i in range (R):
+    #         for j in range (i + 1, R):
+    #             if group[j] in list(graph.adj[group[i]]):
+    #                 graph[group[i]][group[j]]['value'] *= (1 - 1 / ((R - 1) ** p))
 
-                output_file = open(path_to_outputs + '/' + directory + '/' + subfolder + '.out', 'w+')
-                for bus in solution[0]:
-                    output_file.write(str(bus) + '\n')
-                output_file.close()
+    # print(graph.edges.data())
 
-            else:
-                total += bestSoFar[directory][subfolder]['score']
-                print('No improvement. Discarded.')
-
-    print('total score: ' + str(total / 722))
-    print('improved: ' + str(improved))
-    bestSoFar['overall'] = total / 722
-
-    save_dic(bestSoFar)
+    # save_dic(bestSoFar)
 
     # graph, num_buses, size_bus, constraints = parse_input("testInputs/input1")
     # solution = solve(graph, num_buses, size_bus, constraints)
