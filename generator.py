@@ -5,7 +5,8 @@ G = nx.Graph()
 sizes = [['small', 50], ['medium', 500], ['large', 1000]]
 # G = nx.read_gml('./testInputs/input1.gml')
 
-def graphGenerator(size):
+def graphGenerator(sizes):
+    size = sizes[1]
     graph = nx.Graph()
     graph.add_nodes_from([i for i in range(1, size)])  #add nodes 1 to 49
     rowdyStart = int((size)/2 + 1) #26
@@ -19,7 +20,7 @@ def graphGenerator(size):
             graph.add_edge(j, num)
 
 
-    parameters_file = open("./inputs/small/parameters.txt", "w")
+    parameters_file = open("./inputs/" + sizes[0] + "/parameters.txt", "w")
     parameters_file.write(str(2) + '\n')
     parameters_file.write(str(size - 1) + '\n')
     #the following defines the rowdy groups, whcih are the pairs (1, k), k from 26 to 49
@@ -38,6 +39,6 @@ def generateOutput(name, size):
     output_file.close()
 
 for options in sizes:
-    G = graphGenerator(options[1])
+    G = graphGenerator(options)
     nx.write_gml(G, './inputs/' + options[0] + '/graph.gml')
     generateOutput(options[0], options[1])
