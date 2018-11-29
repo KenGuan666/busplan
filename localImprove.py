@@ -23,6 +23,10 @@ def modify_random(solution, graph, num_buses, size_bus, constraints):
 
     return solution
 
+def modify_busScore(solution, grpah, num_buses, size_bus, constraints):
+
+    return solution
+
 def main():
 
     count = 0
@@ -38,7 +42,7 @@ def main():
     total = 0
 
     for _ in range(100):
-        for size in ['small']:
+        for size in ['small', 'medium', 'large']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
