@@ -299,6 +299,9 @@ def calcScore(graph, constraints, sol):
             score += 1
     return score / total_edges
 
+
+
+
 def main():
     '''
         Main method which iterates over all inputs and calls `solve` on each.

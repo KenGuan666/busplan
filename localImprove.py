@@ -23,6 +23,10 @@ def modify_random(solution, graph, num_buses, size_bus, constraints):
 
     return solution
 
+def modify_busScore(solution, grpah, num_buses, size_bus, constraints):
+
+    return solution
+
 def main():
 
     count = 0
@@ -37,36 +41,35 @@ def main():
     count = 0
     total = 0
 
-    for _ in range(100):
-        for size in ['small']:
-            subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
-            for number in subfolders:
-                graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
-                solution = parse_output(size, number)
+    for size in ['small', 'medium', 'large']:
+        subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
+        for number in subfolders:
+            graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
+            solution = parse_output(size, number)
 
-                saved_score = dic[size][number]['score']
+            saved_score = dic[size][number]['score']
 
-                for i in range (num_modifications):
-                    modified = modify(solution, graph, num_buses, size_bus, constraints)
-                    modified_score = calcScore(graph, constraints, modified)
-                    if modified_score > saved_score:
-                        total += modified_score
-                        count += 1
-                        print('improved ' + size + ' ' + number + ' by ' + str(modified_score - saved_score))
-                        dic[size][number]['score'] = modified_score
-                        dic[size][number]['improve_method'] = method
-                        output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                        for bus in solution:
-                            output_file.write(str(bus) + '\n')
-                        output_file.close()
-                        save_dic(dic)
-                    else:
-                        total += saved_score
+            for i in range (num_modifications):
+                modified = modify(solution, graph, num_buses, size_bus, constraints)
+                modified_score = calcScore(graph, constraints, modified)
+                if modified_score > saved_score:
+                    total += modified_score
+                    count += 1
+                    print('improved ' + size + ' ' + number + ' by ' + str(modified_score - saved_score))
+                    dic[size][number]['score'] = modified_score
+                    dic[size][number]['improve_method'] = method
+                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    for bus in solution:
+                        output_file.write(str(bus) + '\n')
+                    output_file.close()
+                    save_dic(dic)
+                else:
+                    total += saved_score
 
-        print('Improved: ' + str(count))
-        print(total / 722)
-        dic['overall'] = total / 722
-        save_dic(dic)
+    print('Improved: ' + str(count))
+    print(total / 722)
+    dic['overall'] = total / 722
+    save_dic(dic)
 
 
 if __name__ == '__main__':
