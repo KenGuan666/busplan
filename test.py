@@ -3,186 +3,103 @@ import pickle
 import random
 import os
 
-import queue
+from utils.heap import MaxHeap, MinHeap
+from clear import save_dic, load_dic
 
-###########################################
-# Change this variable to the path to
-# the folder containing all three input
-# size category folders
-###########################################
-path_to_inputs = "./all_inputs"
+from solver import *
 
-###########################################
-# Change this variable if you want
-# your outputs to be put in a
-# different folder
-###########################################
-path_to_outputs = "./output_submission/busplan"
+def solve_basicFriends(graph, num_buses, size_bus, constraints):
 
-total_inputs = 722
+    originalGraph = graph.copy()
 
-def save_dic(obj):
-    with open('dic.pkl', 'wb') as f:
-        pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
-def load_dic():
-    with open('dic.pkl', 'rb') as f:
-        return pickle.load(f)
-
-def parse_input(folder_name):
-    '''
-        Parses an input and returns the corresponding graph and parameters
-
-        Inputs:
-            folder_name - a string representing the path to the input folder
-
-        Outputs:
-            (graph, num_buses, size_bus, constraints)
-            graph - the graph as a NetworkX object
-            num_buses - an integer representing the number of buses you can allocate to
-            size_buses - an integer representing the number of students that can fit on a bus
-            constraints - a list where each element is a list vertices which represents a single rowdy group
-    '''
-    graph = nx.read_gml(folder_name + "/graph.gml")
-    parameters = open(folder_name + "/parameters.txt")
-    num_buses = int(parameters.readline())
-    size_bus = int(parameters.readline())
-    constraints = []
-
-    for line in parameters:
-        line = line[1: -2]
-        curr_constraint = [num.replace("'", "") for num in line.split(", ")]
-        constraints.append(curr_constraint)
-
-    return graph, num_buses, size_bus, constraints
-
-
-
-def solve_naiveFriends(graph, num_buses, size_bus, constraints):
+    threshold = 0.05
 
     solution = []
     buses = [[] for i in range(num_buses)]
 
+    for n in graph.nodes():
+        graph.nodes[n]['friends'] = len(list(graph.adj[n]))
+        graph.nodes[n]['edgeVal'] = float('inf')
 
+    nodes = list(graph.nodes())
 
-    score = calcScore(graph.copy(), constraints, solution)
-    print(str(score) + '\n')
+    toRemove = []
+    for pair in graph.edges:
+        if pair[0] == pair[1]:
+            toRemove.append(pair[0])
+            continue
+        graph[pair[0]][pair[1]]['value'] = max(graph.nodes[pair[0]]['friends'], graph.nodes[pair[1]]['friends'])
+        graph[pair[0]][pair[1]]['rowdy'] = 1
 
-    return (solution, score)
+    for node in toRemove:
+        graph.remove_edge(node, node)
 
+    for group in constraints:
+        R = len(group)
+        p = 2
 
-def solve_fastOrder(graph, num_buses, size_bus, constraints):
+        # One rowdy dude that destroys the whole bus
+        if R == 1:
+            for neighbor in graph.adj[group[0]]:
+                graph[neighbor][group[0]]['rowdy'] = 0
+        else:
+            for i in range (R):
+                for j in range (i + 1, R):
+                    if group[j] in list(graph.adj[group[i]]):
+                        graph[group[i]][group[j]]['rowdy'] *= (1 - 1 / ((R - 1) ** p))
 
-    solution = []
-    buses = [[] for i in range(num_buses)]
+    heap = MaxHeap(list(graph.nodes()), lambda x: len(graph.adj[x]))
 
     index = 0
-    count = 0
-    for n in list(graph.nodes()):
-        count += 1
-        buses[index].append(n)
-        if count == size_bus:
-            count = 0
-            index += 1
-    for b in buses:
-        solution.append(b)
-
-    score = calcScore(graph.copy(), constraints, solution)
-    print(str(score) + '\n')
-
-    return (solution, score)
-
-
-def solve_random(graph, num_buses, size_bus, constraints):
-
-    lst = list(graph.nodes())
-    random.shuffle(lst)
-    solution = fillHelper(lst, num_buses)
-
-    score = calcScore(graph.copy(), constraints, solution)
-    print(str(score) + '\n')
-
-    return (solution, score)
-
-
-def solve_fastOrderFill(graph, num_buses, size_bus, constraints):
-
-    solution = fillHelper(list(graph.nodes()), num_buses)
-
-    score = calcScore(graph.copy(), constraints, solution)
-    print(str(score) + '\n')
-
-    return (solution, score)
-
-
-def solve_revOrderFill(graph, num_buses, size_bus, constraints):
-
-    solution = fillHelper(list(graph.nodes())[:: -1], num_buses)
-
-    score = calcScore(graph.copy(), constraints, solution)
-    print(str(score) + '\n')
-
-    return (solution, score)
-
-
-def fillHelper(lst, num_buses):
-    solution = []
-    buses = [[] for i in range(num_buses)]
-    cap = int(len(lst) / num_buses)
-
-    index = 0
-    count = 0
-
-    for n in lst:
-        count += 1
-        buses[index].append(n)
-        if count >= cap:
-            count = 0
-            index += 1
+    banned = [[] for i in range(num_buses)]
+    banning = True
+    while heap.size() > 0:
         if index == num_buses:
+            banned = [[] for i in range(num_buses)]
+            banning = False
             index = 0
-            cap = 1
+            continue
+
+        if len(buses[index]) == size_bus:
+            index += 1
+            continue
+
+        lead = heap.pop()
+
+        buses[index].append(lead)
+
+        neighbors = list(graph.adj[lead])
+
+        for n in neighbors:
+            if graph[lead][n]['rowdy'] < threshold:
+                banned[index].append(n)
+            graph.nodes[n]['edgeVal'] = min(graph.nodes[n]['edgeVal'], graph[n][lead]['value'])
+            graph.remove_edge(lead, n)
+
+        friendHeap = MinHeap(neighbors, lambda x: graph.nodes[x]['edgeVal'])
+        while len(buses[index]) < size_bus and friendHeap.size() > 0:
+            neighbor = friendHeap.pop()
+            if neighbor in banned[index] and banning:
+                continue
+            heap.remove(neighbor)
+            buses[index].append(neighbor)
+
+            neighborbors = list(graph.adj[neighbor])
+
+            for n in neighborbors:
+                graph.nodes[n]['edgeVal'] = min(graph.nodes[n]['edgeVal'], graph[n][neighbor]['value'])
+                graph.remove_edge(neighbor, n)
+
+            friendHeap.insert(list(graph.adj[neighbor]))
+
+        index += 1
+
     for b in buses:
         solution.append(b)
 
-    return solution
+    score = calcScore(originalGraph, constraints, solution)
 
-
-
-
-def calcScore(graph, constraints, sol):
-
-    for bus in sol:
-        if len(bus) == 0:
-            return 0
-
-    bus_assignments = {}
-    attendance_count = 0
-
-    # make sure each student is in exactly one bus
-    attendance = {student:False for student in graph.nodes()}
-    for i in range(len(sol)):
-        for student in sol[i]:
-            attendance[student] = True
-            bus_assignments[student] = i
-
-    total_edges = graph.number_of_edges()
-    # Remove nodes for rowdy groups which were not broken up
-    for i in range(len(constraints)):
-        busses = set()
-        for student in constraints[i]:
-            busses.add(bus_assignments[student])
-        if len(busses) <= 1:
-            for student in constraints[i]:
-                if student in graph:
-                    graph.remove_node(student)
-
-    # score output
-    score = 0
-    for edge in graph.edges():
-        if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
-            score += 1
-    return score / total_edges
+    return (solution, score)
 
 def main():
     '''
@@ -194,32 +111,27 @@ def main():
 
     bestSoFar = load_dic()
 
-    path = './all_inputs/' +  'small' + '/' + '1'
+    improved = 0
+
+    # for directory in ['medium']:
+    #     subfolders = [x[1] for x in os.walk(path_to_inputs + '/' + directory)][0]
+    #     for subfolder in subfolders:
+    directory = 'medium'
+    subfolder = '234'
+    
+    path = path_to_inputs + '/' + directory + '/' + subfolder
     graph, num_buses, size_bus, constraints = parse_input(path)
+    print(directory + ' ' + subfolder)
 
-    for n in graph.nodes():
-        graph.nodes[n]['friends'] = len(list(graph.adj[n]))
+    solve = solve_basicFriends
 
-    lst = list(graph.nodes.data())
-    lst.sort(key = lambda n : n[1]['friends'], reverse = True)
+    solution = solve(graph.copy(), num_buses, size_bus, constraints)
 
-    print(lst)
+    if (solution[1] > bestSoFar[directory][subfolder]['score']):
+        print('Improved ' + directory + ' ' + subfolder + ' by ' + str(solution[1] - bestSoFar[directory][subfolder]['score']))
+        improved += 1
 
-    # for pair in graph.edges:
-    #     graph[pair[0]][pair[1]]['value'] = graph.nodes[pair[0]]['friends'] + graph.nodes[pair[1]]['friends']
-    #
-    # for group in constraints:
-    #     R = len(group)
-    #     p = 2
-    #     for i in range (R):
-    #         for j in range (i + 1, R):
-    #             if group[j] in list(graph.adj[group[i]]):
-    #                 graph[group[i]][group[j]]['value'] *= (1 - 1 / ((R - 1) ** p))
-
-    # print(graph.edges.data())
-
-    # save_dic(bestSoFar)
-
+    print('improved: ' + str(improved))
     # graph, num_buses, size_bus, constraints = parse_input("testInputs/input1")
     # solution = solve(graph, num_buses, size_bus, constraints)
     # output_file = open("testOutputs/output1/output1.out", "w")

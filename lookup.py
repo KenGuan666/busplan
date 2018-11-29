@@ -1,13 +1,14 @@
 import pickle
+import sys
 
-def load_dic():
-    with open('dic.pkl', 'rb') as f:
-        return pickle.load(f)
+from clear import load_dic
 
 dic = load_dic()
 
-size = 'small'
-number = '1'
+size = sys.argv[1]
+number = sys.argv[2]
 
 print(dic[size][number]['score'])
 print(dic[size][number]['method'])
+if 'improve_method' in dic[size][number]:
+    print(dic[size][number]['improve_method'])

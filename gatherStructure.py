@@ -1,9 +1,7 @@
 import pickle
 import os
 
-def load_dic():
-    with open('dic.pkl', 'rb') as f:
-        return pickle.load(f)
+from clear import load_dic
 
 bestSoFar = load_dic()
 
@@ -18,5 +16,7 @@ for directory in ['small', 'medium', 'large']:
             result[bestSoFar[directory][subfolder]['method']] += 1
         if bestSoFar[directory][subfolder]['score'] == 0:
             result['zeros'].append(directory + '.' + subfolder)
+
+result['score'] = bestSoFar['overall']
 
 print(result)
