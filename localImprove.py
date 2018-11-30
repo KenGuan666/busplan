@@ -15,21 +15,29 @@ def chance(n):
 
 def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_score):
 
-    def swap():
-        pass
+    valid_from = list(filter(lambda x: len(solution[x]) > 1, range(len(solution))))
+    valid_to = list(filter(lambda x: len(solution[x]) < size_bus, range(len(solution))))
+    if len(valid_from) == 0 or len(valid_to) == 0:
+        return []
 
-    valid_from = list(filter(lambda x: len(x) > 1, solution))
-    valid_to = list(filter(lambda x: len(x) < size_bus))
+    busF, busT = random.randint(0, len(valid_from) - 1), random.randint(0, len(valid_to) - 1)
+    busF, busT = valid_from[busF], valid_to[busT]
     for _ in range(2):
-        pass
+
+        indexF= random.randint(0, len(solution[busF]) - 1)
+        solution[busT].append(solution[busF].pop(indexF))
+
+        randi = modify_stepRandom(solution, graph, num_buses, size_bus, constraints, prev_score)
+
+        if len(randi) > 0:
+            return randi
+
+        solution[busF].append(solution[busT].pop(len(solution[busT]) - 1))
 
     return []
 
 def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score):
     graph = graph.copy()
-
-    def swap():
-        solution[index + 1][indexA], solution[index][indexB] = solution[index][indexB], solution[index + 1][indexA]
 
     for _ in range(random.randint(1, 3)):
         for index in range(len(solution) - 1):
@@ -72,19 +80,21 @@ def main():
     count = 0
     dic = load_dic()
 
-    method = 'localImprove_random'
+    method = 'localImprove_fill'
     num_modifications = 1
 
     if method == 'localImprove_random':
         modify = modify_random
     elif method == 'localImprove_step':
         modify = modify_stepRandom
+    elif method == 'localImprove_fill':
+        modify = modify_fillRandom
 
     for i in range(100):
         count = 0
         total = 0
 
-        for size in ['small', 'medium', 'large']:
+        for size in ['small']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
@@ -97,12 +107,12 @@ def main():
                     modified_score = modified[1]
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score))
-                    dic[size][number]['score'] = modified_score + saved_score
-                    dic[size][number]['improve_method'] = method
-                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                    for bus in modified[0]:
-                        output_file.write(str(bus) + '\n')
-                    output_file.close()
+                    # dic[size][number]['score'] = modified_score + saved_score
+                    # dic[size][number]['improve_method'] = method
+                    # output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    # for bus in modified[0]:
+                    #     output_file.write(str(bus) + '\n')
+                    # output_file.close()
                     save_dic(dic)
                 else:
                     total += saved_score
