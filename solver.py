@@ -91,7 +91,7 @@ def solve_naiveFriends(graph, num_buses, size_bus, constraints):
     for b in buses:
         solution.append(b)
 
-    score = calcScore(graph.copy(), constraints, solution)
+    score = calcScore(graph.copy(), constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -129,7 +129,7 @@ def solve_basicFriends(graph, num_buses, size_bus, constraints):
         if R > size_bus or R > 80:
             continue
 
-        # One rowdy dude that destroys the whole bus
+        # One rowdy dude that is destined to go home
         if R == 1:
             for neighbor in graph.adj[group[0]]:
                 graph[neighbor][group[0]]['rowdy'] = 0
@@ -186,7 +186,7 @@ def solve_basicFriends(graph, num_buses, size_bus, constraints):
     for b in buses:
         solution.append(b)
 
-    score = calcScore(originalGraph, constraints, solution)
+    score = calcScore(originalGraph, constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -207,7 +207,7 @@ def solve_fastOrder(graph, num_buses, size_bus, constraints):
     for b in buses:
         solution.append(b)
 
-    score = calcScore(graph.copy(), constraints, solution)
+    score = calcScore(graph.copy(), constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -218,7 +218,7 @@ def solve_random(graph, num_buses, size_bus, constraints):
     random.shuffle(lst)
     solution = fillHelper(lst, num_buses)
 
-    score = calcScore(graph.copy(), constraints, solution)
+    score = calcScore(graph.copy(), constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -227,7 +227,7 @@ def solve_fastOrderFill(graph, num_buses, size_bus, constraints):
 
     solution = fillHelper(list(graph.nodes()), num_buses)
 
-    score = calcScore(graph.copy(), constraints, solution)
+    score = calcScore(graph.copy(), constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -236,7 +236,7 @@ def solve_revOrderFill(graph, num_buses, size_bus, constraints):
 
     solution = fillHelper(list(graph.nodes())[:: -1], num_buses)
 
-    score = calcScore(graph.copy(), constraints, solution)
+    score = calcScore(graph.copy(), constraints, solution, size_bus)
 
     return (solution, score)
 
@@ -264,12 +264,12 @@ def fillHelper(lst, num_buses):
     return solution
 
 
-
-def calcScore(graph, constraints, sol):
+def calc_LocalScore(graph, constraints, sol, size_bus):
+    graph = graph.copy()
 
     for bus in sol:
         if len(bus) == 0:
-            return 0
+            return [0]
 
     bus_assignments = {}
     attendance_count = 0
@@ -281,25 +281,34 @@ def calcScore(graph, constraints, sol):
             attendance[student] = True
             bus_assignments[student] = i
 
-    total_edges = graph.number_of_edges()
     # Remove nodes for rowdy groups which were not broken up
     for i in range(len(constraints)):
+        if len(constraints[i]) > size_bus:
+            continue
         busses = set()
+        keep = True
         for student in constraints[i]:
+            if student not in bus_assignments:
+                keep = False
+                break
             busses.add(bus_assignments[student])
-        if len(busses) <= 1:
+        if keep and len(busses) <= 1:
             for student in constraints[i]:
                 if student in graph:
                     graph.remove_node(student)
 
     # score output
-    score = 0
-    for edge in graph.edges():
-        if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
-            score += 1
-    return score / total_edges
+    score = [graph.subgraph(bus).number_of_edges() for bus in sol]
+    # score = [0] * len(sol)
+    # for edge in graph.edges():
+    #     if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
+    #         score[bus_assignments[edge[0]]] += 1
+    return score
 
 
+def calcScore(graph, constraints, sol, size_bus):
+    total_edges = graph.number_of_edges()
+    return sum(calc_LocalScore(graph, constraints, sol, size_bus)) / total_edges
 
 
 def main():
