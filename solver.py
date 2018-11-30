@@ -129,7 +129,7 @@ def solve_basicFriends(graph, num_buses, size_bus, constraints):
         if R > size_bus or R > 80:
             continue
 
-        # One rowdy dude that destroys the whole bus
+        # One rowdy dude that is destined to go home
         if R == 1:
             for neighbor in graph.adj[group[0]]:
                 graph[neighbor][group[0]]['rowdy'] = 0
@@ -298,8 +298,6 @@ def calcScore(graph, constraints, sol):
         if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
             score += 1
     return score / total_edges
-
-
 
 
 def main():

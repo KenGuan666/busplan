@@ -5,7 +5,7 @@ from clear import load_dic
 
 bestSoFar = load_dic()
 
-result = {'zeros': []}
+result = {'zeros': [], 'perfects': 0}
 
 for directory in ['small', 'medium', 'large']:
     subfolders = [x[1] for x in os.walk('./all_inputs/' + directory)][0]
@@ -16,6 +16,8 @@ for directory in ['small', 'medium', 'large']:
             result[bestSoFar[directory][subfolder]['method']] += 1
         if bestSoFar[directory][subfolder]['score'] == 0:
             result['zeros'].append(directory + '.' + subfolder)
+        if bestSoFar[directory][subfolder]['score'] == 1:
+            result['perfects'] += 1
 
 result['score'] = bestSoFar['overall']
 
