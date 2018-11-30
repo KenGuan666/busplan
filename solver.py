@@ -322,6 +322,8 @@ def calcScore(graph, constraints, sol, size_bus):
             attendance[student] = True
             bus_assignments[student] = i
 
+    total_edges = graph.number_of_edges()
+
     # Remove nodes for rowdy groups which were not broken up
     for i in range(len(constraints)):
         busses = set()
@@ -332,7 +334,6 @@ def calcScore(graph, constraints, sol, size_bus):
                 if student in graph:
                     graph.remove_node(student)
 
-    total_edges = graph.number_of_edges()
     if total_edges == 0:
         return 0
 

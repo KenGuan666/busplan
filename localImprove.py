@@ -27,6 +27,7 @@ def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_sc
     return []
 
 def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score):
+    graph = graph.copy()
 
     def swap():
         solution[index + 1][indexA], solution[index][indexB] = solution[index][indexB], solution[index + 1][indexA]
@@ -38,12 +39,16 @@ def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score)
                 swap()
 
         modified_score = calcScore(graph, constraints, solution, size_bus)
+        print(modified_score)
+        print(prev_score)
         if modified_score > prev_score:
+            print(solution)
             return (solution, modified_score - prev_score)
 
     return []
 
 def modify_stepRandom(solution, graph, num_buses, size_bus, constraints, prev):
+    graph = graph.copy()
     busScores = calc_LocalScore(graph, constraints, solution, size_bus)
 
     def swap():
@@ -92,22 +97,19 @@ def main():
                 modified = modify(solution, graph, num_buses, size_bus, constraints, saved_score)
                 if len(modified) > 0:
                     modified_score = modified[1]
-                    total += modified_score
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score))
-                    dic[size][number]['score'] = modified_score + saved_score
-                    dic[size][number]['improve_method'] = method
-                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                    for bus in modified[0]:
-                        output_file.write(str(bus) + '\n')
-                    output_file.close()
-                    save_dic(dic)
+                    # dic[size][number]['score'] = modified_score + saved_score
+                    # dic[size][number]['improve_method'] = method
+                    # output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    # for bus in modified[0]:
+                    #     output_file.write(str(bus) + '\n')
+                    # output_file.close()
+                    # save_dic(dic)
                 else:
                     total += saved_score
 
         print('Improved: ' + str(count))
-        print(total / 722)
-        dic['overall'] = total / 722
         save_dic(dic)
 
 
