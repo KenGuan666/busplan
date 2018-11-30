@@ -30,18 +30,18 @@ def modify_stepRandom(solution, graph, num_buses, size_bus, constraints):
     def swap():
         solution[i1][indexA], solution[i2][indexB] = solution[i2][indexB], solution[i1][indexA]
 
-    for i1 in range(len(solution) - 1):
-        for i2 in range(i1 + 1, len(solution)):
-            prev_score = busScores[i1] + busScores[i2]
+    for _ in range(20):
+        i1, i2 = random.randint(0, len(solution) - 1), random.randint(0, len(solution) - 1)
+        prev_score = busScores[i1] + busScores[i2]
 
-            for i in range(1):
-                indexA, indexB = random.randint(0, len(solution[i1]) - 1), random.randint(0, len(solution[i2]) - 1)
-                swap()
+        for i in range(3):
+            indexA, indexB = random.randint(0, len(solution[i1]) - 1), random.randint(0, len(solution[i2]) - 1)
+            swap()
 
-                modified_score = sum(calc_LocalScore(graph, constraints, [solution[i1], solution[i2]], size_bus))
-                if modified_score > prev_score:
-                    return (solution, (modified_score - prev_score) / graph.number_of_edges())
-                swap()
+            modified_score = sum(calc_LocalScore(graph, constraints, [solution[i1], solution[i2]], size_bus))
+            if modified_score > prev_score:
+                return (solution, (modified_score - prev_score) / graph.number_of_edges())
+            swap()
 
     return []
 
@@ -62,7 +62,7 @@ def main():
         count = 0
         total = 0
 
-        for size in ['small']:
+        for size in ['medium']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
