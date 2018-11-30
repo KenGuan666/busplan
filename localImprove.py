@@ -23,7 +23,21 @@ def modify_random(solution, graph, num_buses, size_bus, constraints):
 
     return solution
 
-def modify_busScore(solution, grpah, num_buses, size_bus, constraints):
+def modify_stepRandom(solution, grpah, num_buses, size_bus, constraints):
+    busScores = calc_LocalScore(graph, constraints, solution)
+
+    for i1 in range(len(solution) - 1):
+        for i2 in range(i1 + 1, len(solution)):
+            prev_score = busScores[i1] + busScores[i2]
+
+
+    for i in range(random.randint(1, 5)):
+        for index in range(len(solution) - 1):
+            if chance(80):
+                indexA, indexB = random.randint(0, len(solution[index + 1]) - 1), random.randint(0, len(solution[index]) - 1)
+                temp = solution[index + 1][indexA]
+                solution[index + 1][indexA] = solution[index][indexB]
+                solution[index][indexB] = temp
 
     return solution
 
