@@ -27,7 +27,7 @@ def main():
     count = 0
     dic = load_dic()
 
-    for size in ['large']:
+    for size in ['small']:
         subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
         for number in subfolders:
             graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
