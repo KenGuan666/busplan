@@ -21,7 +21,7 @@ def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_sc
     valid_from = list(filter(lambda x: len(x) > 1, solution))
     valid_to = list(filter(lambda x: len(x) < size_bus))
     for _ in range(2):
-        pass
+
 
 
     return []
@@ -36,7 +36,9 @@ def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score)
         for index in range(len(solution) - 1):
             if chance(80):
                 indexA, indexB = random.randint(0, len(solution[index + 1]) - 1), random.randint(0, len(solution[index]) - 1)
-                swap()
+                temp = solution[index + 1][indexA]
+                solution[index + 1][indexA] = solution[index][indexB]
+                solution[index][indexB] = temp
 
         modified_score = calcScore(graph, constraints, solution, size_bus)
         print(modified_score)
@@ -74,7 +76,7 @@ def main():
     count = 0
     dic = load_dic()
 
-    method = 'localImprove_random'
+    method = 'localImprove_step'
     num_modifications = 1
 
     if method == 'localImprove_random':
@@ -86,7 +88,7 @@ def main():
         count = 0
         total = 0
 
-        for size in ['small']:
+        for size in ['medium']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
