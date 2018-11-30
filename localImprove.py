@@ -14,23 +14,49 @@ def chance(n):
 
 
 def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_score):
+    graph = graph.copy()
+    edges = graph.number_of_edges()
 
+    busScores = calc_LocalScore(graph, constraints, solution, size_bus)
     valid_from = list(filter(lambda x: len(solution[x]) > 1, range(len(solution))))
     valid_to = list(filter(lambda x: len(solution[x]) < size_bus, range(len(solution))))
     if len(valid_from) == 0 or len(valid_to) == 0:
         return []
+    if len(valid_from) == 1 and len(valid_to) == 1 and valid_from[0] == valid_to[0]:
+        return []
 
     busF, busT = random.randint(0, len(valid_from) - 1), random.randint(0, len(valid_to) - 1)
+    while valid_from[busF] == valid_to[busT]:
+        busF, busT = random.randint(0, len(valid_from) - 1), random.randint(0, len(valid_to) - 1)
     busF, busT = valid_from[busF], valid_to[busT]
-    for _ in range(2):
+    prev_score = busScores[busF] + busScores[busT]
 
-        indexF= random.randint(0, len(solution[busF]) - 1)
+    def swap():
+        solution[i1][indexA], solution[i2][indexB] = solution[i2][indexB], solution[i1][indexA]
+
+    for _ in range(5):
+        indexF = random.randint(0, len(solution[busF]) - 1)
         solution[busT].append(solution[busF].pop(indexF))
+        modified_score = sum(calc_LocalScore(graph, constraints, [solution[busF], solution[busT]], size_bus))
 
-        randi = modify_stepRandom(solution, graph, num_buses, size_bus, constraints, prev_score)
+        diff = modified_score - prev_score
+        if diff > 0:
+            return (solution, diff / edges)
 
-        if len(randi) > 0:
-            return randi
+        new_busScores = calc_LocalScore(graph, constraints, solution, size_bus)
+
+        for _ in range(3):
+            i1, i2 = random.randint(0, len(solution) - 1), random.randint(0, len(solution) - 1)
+            prev_scoree = new_busScores[i1] + new_busScores[i2]
+
+            for __ in range(3):
+                indexA, indexB = random.randint(0, len(solution[i1]) - 1), random.randint(0, len(solution[i2]) - 1)
+                swap()
+
+                modified_scoree = sum(calc_LocalScore(graph, constraints, [solution[i1], solution[i2]], size_bus))
+                if modified_scoree - prev_scoree + diff > 0:
+                    return (solution, (modified_scoree - prev_scoree + diff) / edges)
+                swap()
 
         solution[busF].append(solution[busT].pop(len(solution[busT]) - 1))
 
@@ -81,7 +107,12 @@ def main():
     dic = load_dic()
 
     method = 'localImprove_fill'
-    num_modifications = 1
+    if len(sys.argv) > 1:
+        method = 'localImprove_' + sys.argv[1]
+
+    num_iteration = 10
+    if len(sys.argv) > 2:
+        num_iteration = int(sys.argv[2])
 
     if method == 'localImprove_random':
         modify = modify_random
@@ -90,7 +121,7 @@ def main():
     elif method == 'localImprove_fill':
         modify = modify_fillRandom
 
-    for i in range(100):
+    for i in range(num_iteration):
         count = 0
         total = 0
 
@@ -107,12 +138,12 @@ def main():
                     modified_score = modified[1]
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score))
-                    # dic[size][number]['score'] = modified_score + saved_score
-                    # dic[size][number]['improve_method'] = method
-                    # output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                    # for bus in modified[0]:
-                    #     output_file.write(str(bus) + '\n')
-                    # output_file.close()
+                    dic[size][number]['score'] = modified_score + saved_score
+                    dic[size][number]['improve_method'] = method
+                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    for bus in modified[0]:
+                        output_file.write(str(bus) + '\n')
+                    output_file.close()
                     save_dic(dic)
                 else:
                     total += saved_score
