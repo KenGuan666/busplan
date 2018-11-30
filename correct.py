@@ -27,7 +27,7 @@ def main():
     count = 0
     dic = load_dic()
 
-    for size in ['small', 'medium', 'large']:
+    for size in ['large']:
         subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
         for number in subfolders:
             graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
@@ -35,11 +35,16 @@ def main():
 
             saved_score = dic[size][number]['score']
 
-            actual_score = calcScore(graph, constraints, solution)
+            actual_score = calcScore(graph, constraints, solution, size_bus)
 
-            if saved_score > actual_score:
+            print('Looking at ' + size + ' ' + number)
+
+            if not saved_score == actual_score:
                 print(size + ' ' + number)
+                print(saved_score - actual_score)
+                dic[size][number]['score'] = actual_score
                 count += 1
+                save_dic(dic)
 
     print(count)
     # save_dic()

@@ -24,20 +24,23 @@ def modify_random(solution, graph, num_buses, size_bus, constraints):
     return solution
 
 def modify_stepRandom(solution, grpah, num_buses, size_bus, constraints):
-    busScores = calc_LocalScore(graph, constraints, solution)
+    busScores = calc_LocalScore(graph, constraints, solution, size_bus)
+
+    def swap():
+        solution[i1][indexA], solution[i2][indexB] = solution[i2][indexB], solution[i1][indexA]
 
     for i1 in range(len(solution) - 1):
         for i2 in range(i1 + 1, len(solution)):
             prev_score = busScores[i1] + busScores[i2]
 
+            for i in range(1):
+                indexA, indexB = random.randint(0, len(solution[i1]) - 1), random.randint(0, len(solution[i2]) - 1)
+                swap()
 
-    for i in range(random.randint(1, 5)):
-        for index in range(len(solution) - 1):
-            if chance(80):
-                indexA, indexB = random.randint(0, len(solution[index + 1]) - 1), random.randint(0, len(solution[index]) - 1)
-                temp = solution[index + 1][indexA]
-                solution[index + 1][indexA] = solution[index][indexB]
-                solution[index][indexB] = temp
+                modified_score = calc_LocalScore(graph, constraints, [solution[i1], solution[i2]], size_bus)
+                if modified_score > prev_score:
+                    return solution, (modified_score - prev_score) / graph.number_of_edges()
+                swap()
 
     return solution
 
@@ -65,25 +68,24 @@ def main():
 
             for i in range (num_modifications):
                 modified = modify(solution, graph, num_buses, size_bus, constraints)
-                modified_score = calcScore(graph, constraints, modified)
                 if modified_score > saved_score:
                     total += modified_score
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score - saved_score))
-                    dic[size][number]['score'] = modified_score
-                    dic[size][number]['improve_method'] = method
-                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                    for bus in solution:
-                        output_file.write(str(bus) + '\n')
-                    output_file.close()
-                    save_dic(dic)
+                    # dic[size][number]['score'] = modified_score
+                    # dic[size][number]['improve_method'] = method
+                    # output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    # for bus in solution:
+                    #     output_file.write(str(bus) + '\n')
+                    # output_file.close()
+                    # save_dic(dic)
                 else:
                     total += saved_score
 
     print('Improved: ' + str(count))
     print(total / 722)
     dic['overall'] = total / 722
-    save_dic(dic)
+    # save_dic(dic)
 
 
 if __name__ == '__main__':

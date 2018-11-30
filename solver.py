@@ -307,8 +307,40 @@ def calc_LocalScore(graph, constraints, sol, size_bus):
 
 
 def calcScore(graph, constraints, sol, size_bus):
+    for bus in sol:
+        if len(bus) > size_bus or len(bus) <= 0:
+            return 0
+
+    bus_assignments = {}
+
+    # make sure each student is in exactly one bus
+    attendance = {student:False for student in graph.nodes()}
+    for i in range(len(sol)):
+        for student in sol[i]:
+            # if a student appears more than once
+
+            attendance[student] = True
+            bus_assignments[student] = i
+
     total_edges = graph.number_of_edges()
-    return sum(calc_LocalScore(graph, constraints, sol, size_bus)) / total_edges
+    # Remove nodes for rowdy groups which were not broken up
+    for i in range(len(constraints)):
+        busses = set()
+        for student in constraints[i]:
+            busses.add(bus_assignments[student])
+        if len(busses) <= 1:
+            for student in constraints[i]:
+                if student in graph:
+                    graph.remove_node(student)
+
+    # score output
+    score = 0
+    for edge in graph.edges():
+        if bus_assignments[edge[0]] == bus_assignments[edge[1]]:
+            score += 1
+    score = score / total_edges
+
+    return score
 
 
 def main():
@@ -327,23 +359,24 @@ def main():
     if len(sys.argv) > 1:
         method = sys.argv[1]
 
+    if method == 'fastOrderFill':
+        solve = solve_fastOrderFill
+    elif method == 'fastOrder':
+        solve = solve_fastOrder
+    elif method == 'revOrderFill':
+        solve = solve_revOrderFill
+    elif method == 'random':
+        solve = solve_random
+    elif method == 'naiveFriends':
+        solve = solve_naiveFriends
+    elif method == 'basicFriends':
+        solve = solve_basicFriends
+
     for directory in ['small', 'medium', 'large']:
         subfolders = [x[1] for x in os.walk(path_to_inputs + '/' + directory)][0]
         for subfolder in subfolders:
 
-            if method == 'fastOrderFill':
-                solve = solve_fastOrderFill
-            elif method == 'fastOrder':
-                solve = solve_fastOrder
-            elif method == 'revOrderFill':
-                solve = solve_revOrderFill
-            elif method == 'random':
-                solve = solve_random
-            elif method == 'naiveFriends':
-                solve = solve_naiveFriends
-            elif method == 'basicFriends':
-                solve = solve_basicFriends
-            elif method == 'None':
+            if method == 'None':
                 total += bestSoFar[directory][subfolder]['score']
                 continue
 
