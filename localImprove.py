@@ -12,19 +12,40 @@ from correct import parse_output
 def chance(n):
     return random.randint(0, n - 1) < n
 
-def modify_random(solution, graph, num_buses, size_bus, constraints):
-    # for i in range(random.randint(1, 5)):
-    #     for index in range(len(solution) - 1):
-    #         if chance(80):
-    #             indexA, indexB = random.randint(0, len(solution[index + 1]) - 1), random.randint(0, len(solution[index]) - 1)
-    #             temp = solution[index + 1][indexA]
-    #             solution[index + 1][indexA] = solution[index][indexB]
-    #             solution[index][indexB] = temp
-    #
-    # return solution
+
+def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_score):
+
+    def swap():
+        pass
+
+    valid_from = list(filter(lambda x: len(x) > 1, solution))
+    valid_to = list(filter(lambda x: len(x) < size_bus))
+    for _ in range(2):
+
+
+
     return []
 
-def modify_stepRandom(solution, graph, num_buses, size_bus, constraints):
+def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score):
+
+    def swap():
+        solution[index + 1][indexA], solution[index][indexB] = solution[index][indexB], solution[index + 1][indexA]
+
+    for _ in range(random.randint(1, 3)):
+        for index in range(len(solution) - 1):
+            if chance(80):
+                indexA, indexB = random.randint(0, len(solution[index + 1]) - 1), random.randint(0, len(solution[index]) - 1)
+                temp = solution[index + 1][indexA]
+                solution[index + 1][indexA] = solution[index][indexB]
+                solution[index][indexB] = temp
+
+        modified_score = calcScore(graph, constraints, solution, size_bus)
+        if modified_score > prev_score:
+            return (solution, modified_score - prev_score)
+
+    return []
+
+def modify_stepRandom(solution, graph, num_buses, size_bus, constraints, prev):
     busScores = calc_LocalScore(graph, constraints, solution, size_bus)
 
     def swap():
@@ -70,7 +91,7 @@ def main():
 
                 saved_score = dic[size][number]['score']
 
-                modified = modify(solution, graph, num_buses, size_bus, constraints)
+                modified = modify(solution, graph, num_buses, size_bus, constraints, saved_score)
                 if len(modified) > 0:
                     modified_score = modified[1]
                     total += modified_score
