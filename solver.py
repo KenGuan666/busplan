@@ -307,6 +307,7 @@ def calc_LocalScore(graph, constraints, sol, size_bus):
 
 
 def calcScore(graph, constraints, sol, size_bus):
+    graph = graph.copy()
     for bus in sol:
         if len(bus) > size_bus or len(bus) <= 0:
             return 0
@@ -324,8 +325,6 @@ def calcScore(graph, constraints, sol, size_bus):
 
     total_edges = graph.number_of_edges()
 
-    if total_edges == 0:
-        return 0
     # Remove nodes for rowdy groups which were not broken up
     for i in range(len(constraints)):
         busses = set()
@@ -336,7 +335,8 @@ def calcScore(graph, constraints, sol, size_bus):
                 if student in graph:
                     graph.remove_node(student)
 
-
+    if total_edges == 0:
+        return 0
 
     # score output
     score = 0

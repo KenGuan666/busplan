@@ -21,8 +21,7 @@ def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_sc
     valid_from = list(filter(lambda x: len(x) > 1, solution))
     valid_to = list(filter(lambda x: len(x) < size_bus))
     for _ in range(2):
-
-
+        pass
 
     return []
 
@@ -41,10 +40,7 @@ def modify_random(solution, graph, num_buses, size_bus, constraints, prev_score)
                 solution[index][indexB] = temp
 
         modified_score = calcScore(graph, constraints, solution, size_bus)
-        print(modified_score)
-        print(prev_score)
         if modified_score > prev_score:
-            print(solution)
             return (solution, modified_score - prev_score)
 
     return []
@@ -76,7 +72,7 @@ def main():
     count = 0
     dic = load_dic()
 
-    method = 'localImprove_step'
+    method = 'localImprove_random'
     num_modifications = 1
 
     if method == 'localImprove_random':
@@ -88,7 +84,7 @@ def main():
         count = 0
         total = 0
 
-        for size in ['medium']:
+        for size in ['small', 'medium', 'large']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
@@ -101,13 +97,13 @@ def main():
                     modified_score = modified[1]
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score))
-                    # dic[size][number]['score'] = modified_score + saved_score
-                    # dic[size][number]['improve_method'] = method
-                    # output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
-                    # for bus in modified[0]:
-                    #     output_file.write(str(bus) + '\n')
-                    # output_file.close()
-                    # save_dic(dic)
+                    dic[size][number]['score'] = modified_score + saved_score
+                    dic[size][number]['improve_method'] = method
+                    output_file = open(path_to_outputs + '/' + size + '/' + number + '.out', 'w+')
+                    for bus in modified[0]:
+                        output_file.write(str(bus) + '\n')
+                    output_file.close()
+                    save_dic(dic)
                 else:
                     total += saved_score
 
