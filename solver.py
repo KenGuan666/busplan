@@ -51,7 +51,6 @@ def parse_input(folder_name):
     return graph, num_buses, size_bus, constraints
 
 
-
 def solve_naiveFriends(graph, num_buses, size_bus, constraints):
 
     solution = []
@@ -189,19 +188,6 @@ def solve_basicFriends(graph, num_buses, size_bus, constraints):
     score = calcScore(originalGraph, constraints, solution, size_bus)
 
     return (solution, score)
-
-
-def solve_friendsFill(graph, num_buses, size_bus, constraints):
-
-    solution, score = solve_basicFriends(graph, num_buses, size_bus, constraints)
-
-    empties = list(filter(lambda x: len(solution[x]) == 0, range(len(solution))))
-
-    if len(empties) > 0:
-        popables = list(filter(lambda x: len(solution[x]) > 1, range(len(solution))))[::-1]
-        print(popables)
-
-    return []
 
 
 def solve_maxFriends(graph, num_buses, size_bus, constraints):
@@ -508,7 +494,7 @@ def main():
 
             solution = solve(graph.copy(), num_buses, size_bus, constraints)
 
-            if (solution[1] > bestSoFar[directory][subfolder]['score']):
+            if (solution[1] >= bestSoFar[directory][subfolder]['score']):
                 print('Improved ' + directory + ' ' + subfolder + ' by ' + str(solution[1] - bestSoFar[directory][subfolder]['score']))
                 improved += 1
                 total += solution[1]
