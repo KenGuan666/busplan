@@ -13,6 +13,41 @@ def chance(n):
     return random.randint(0, n - 1) < n
 
 
+def modify_consecutive(solution, graph, num_buses, size_bus, constraints, prev_score):
+    graph = graph.copy()
+    edges = graph.number_of_edges()
+    busScores = calc_LocalScore(graph, constraints, solution, size_bus)
+
+    new_score = prev_score
+
+    def swap():
+        solution[i1][indexA], solution[i2][indexB] = solution[i2][indexB], solution[i1][indexA]
+
+    improved = False
+    rounds = 20
+    while rounds > 0:
+        i1, i2 = random.randint(0, len(solution) - 1), random.randint(0, len(solution) - 1)
+        prev_local_score = busScores[i1] + busScores[i2]
+
+        indexA, indexB = random.randint(0, len(solution[i1]) - 1), random.randint(0, len(solution[i2]) - 1)
+        swap()
+
+        local_score = calc_LocalScore(graph, constraints, [solution[i1], solution[i2]], size_bus)
+        modified_score = sum(local_score)
+        if modified_score > prev_local_score:
+            improved = True
+            new_score += (modified_score - prev_local_score) / edges
+            busScores[i1], busScores[i2] = local_score[0], local_score[1]
+            print('Improved by ', new_score - prev_score, ', ', rounds, ' rounds left.')
+            rounds = min(rounds + 10, 100)
+        else:
+            swap()
+            rounds -= 1
+
+    if improved:
+        return (solution, new_score - prev_score)
+    return []
+
 def modify_fillRandom(solution, graph, num_buses, size_bus, constraints, prev_score):
     graph = graph.copy()
     edges = graph.number_of_edges()
@@ -120,6 +155,8 @@ def main():
         modify = modify_stepRandom
     elif method == 'localImprove_fill':
         modify = modify_fillRandom
+    elif method == 'localImprove_consec':
+        modify = modify_consecutive
 
     for i in range(num_iteration):
         count = 0
@@ -146,6 +183,7 @@ def main():
                     output_file.close()
                     save_dic(dic)
                 else:
+                    print('No improvement on ' + size + ' ' + number)
                     total += saved_score
 
         print('Improved: ' + str(count))
