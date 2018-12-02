@@ -39,7 +39,7 @@ def modify_consecutive(solution, graph, num_buses, size_bus, constraints, prev_s
             new_score += (modified_score - prev_local_score) / edges
             busScores[i1], busScores[i2] = local_score[0], local_score[1]
             print('Improved by ', new_score - prev_score, ', ', rounds, ' rounds left.')
-            rounds = min(rounds + 10, 100)
+            rounds = min(rounds + 20, 100)
         else:
             swap()
             rounds -= 1
@@ -164,7 +164,7 @@ def main():
         count = 0
         total = 0
 
-        for size in ['medium']:
+        for size in ['large']:
             subfolders = [x[1] for x in os.walk('all_inputs/' + size)][0]
             for number in subfolders:
                 graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
@@ -192,8 +192,14 @@ def main():
                     total += saved_score
 
         print('Improved: ' + str(count) + ' on ' + str(i) + 'th iteration.')
-        print(improved)
         save_dic(dic)
+
+    valuables = []
+    for key, value in improved.items():
+        if value > num_iteration / 2:
+            valuables.append([key, value])
+
+    print(valuables)
 
 
 if __name__ == '__main__':
