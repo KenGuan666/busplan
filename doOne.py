@@ -35,8 +35,9 @@ def main():
     size = sys.argv[1]
     number = sys.argv[2]
 
+    count = 0
+
     for i in range(num_iteration):
-        count = 0
         total = 0
 
         graph, num_buses, size_bus, constraints = parse_input(path_to_inputs + '/' + size + '/' + number)
@@ -57,11 +58,11 @@ def main():
             output_file.close()
             save_dic(dic)
         else:
-            print('No improvement on ' + size + ' ' + number)
             total += saved_score
 
-        print('Improved: ' + str(count))
         save_dic(dic)
+
+    print('Improved: ' + str(count))
 
 
 if __name__ == '__main__':

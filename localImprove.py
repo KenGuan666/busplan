@@ -145,7 +145,7 @@ def main():
     if len(sys.argv) > 1:
         method = 'localImprove_' + sys.argv[1]
 
-    num_iteration = 10
+    num_iteration = 1
     if len(sys.argv) > 2:
         num_iteration = int(sys.argv[2])
 
@@ -157,6 +157,8 @@ def main():
         modify = modify_fillRandom
     elif method == 'localImprove_consec':
         modify = modify_consecutive
+
+    improved = {}
 
     for i in range(num_iteration):
         count = 0
@@ -172,6 +174,10 @@ def main():
 
                 modified = modify(solution, graph, num_buses, size_bus, constraints, saved_score)
                 if len(modified) > 0:
+                    if number in improved:
+                        improved[number] += 1
+                    else:
+                        improved[number] = 1
                     modified_score = modified[1]
                     count += 1
                     print('improved ' + size + ' ' + number + ' by ' + str(modified_score))
@@ -183,10 +189,10 @@ def main():
                     output_file.close()
                     save_dic(dic)
                 else:
-                    print('No improvement on ' + size + ' ' + number)
                     total += saved_score
 
-        print('Improved: ' + str(count))
+        print('Improved: ' + str(count) + ' on ' + str(i) + 'th iteration.')
+        print(improved)
         save_dic(dic)
 
 
