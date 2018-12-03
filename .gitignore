@@ -1,0 +1,7 @@
+*.pdf
+generator.py
+generator.zip
+notes.txt
+ssh.exe.stackdump
+test.py
+__pycache__/*
