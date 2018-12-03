@@ -2,14 +2,14 @@
 
 ## Installation
 
-Make sure you have python installed on your computer, then simply use `git pull`
+Make sure you have python3 installed on your computer, then simply use `git pull`
 
 ## Running
 
 
 ### Solver
 
-`solver.py` parses inputs from `./all_inputs` and writes outputs to `./output_submission/busplan` ONLY IF the solution is better than what is already written in the output file.
+`solver.py` parses inputs and writes outputs ONLY IF the solution is better than what is already written in the output file.
 
 Windows: `py solver.py`
 UNIX: `python3 solver.py`
@@ -20,7 +20,7 @@ To view cached score, run `py solver.py None`
 
 ### Improver
 
-`localImprove.py` parses outputs from `./output_submission/busplan` and overrides them with better solutions if one is found.
+`localImprove.py` parses outputs and overrides them with better solutions if one is found.
 
 Specify an improving algorithm with the first variable. The number of iterations with another variable. eg. `py localImprove.py consec 10`
 

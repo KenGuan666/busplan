@@ -4,4 +4,9 @@ generator.zip
 notes.txt
 ssh.exe.stackdump
 test.py
-__pycache__/*
+__pycache__
+outputs
+testOutputs
+output_submission
+inputs
+all_inputs
